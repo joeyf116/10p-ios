@@ -17,11 +17,14 @@ class AdaptiveScaffold extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final viewport = viewportForWidth(constraints.maxWidth);
-        final navDestinations = const [
+        const navDestinations = [
           NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.calendar_month_outlined), label: 'Schedule'),
-          NavigationDestination(icon: Icon(Icons.qr_code_2_outlined), label: 'Check-In'),
-          NavigationDestination(icon: Icon(Icons.video_collection_outlined), label: 'Library'),
+          NavigationDestination(
+              icon: Icon(Icons.calendar_month_outlined), label: 'Schedule'),
+          NavigationDestination(
+              icon: Icon(Icons.qr_code_2_outlined), label: 'Check-In'),
+          NavigationDestination(
+              icon: Icon(Icons.video_collection_outlined), label: 'Library'),
         ];
 
         if (viewport == AppViewport.mobile) {
@@ -38,7 +41,8 @@ class AdaptiveScaffold extends StatelessWidget {
             children: [
               NavigationRail(
                 destinations: navDestinations
-                    .map((d) => NavigationRailDestination(icon: d.icon, label: Text(d.label)))
+                    .map((d) => NavigationRailDestination(
+                        icon: d.icon, label: Text(d.label)))
                     .toList(),
                 selectedIndex: 0,
               ),

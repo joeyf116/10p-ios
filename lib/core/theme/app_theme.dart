@@ -17,10 +17,8 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme.copyWith(
-        background: background,
         surface: surface,
         onSurface: textPrimary,
-        onBackground: textPrimary,
         outline: border,
       ),
       scaffoldBackgroundColor: background,
@@ -50,10 +48,8 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme.copyWith(
-        background: background,
         surface: surface,
         onSurface: textPrimary,
-        onBackground: textPrimary,
         outline: border,
       ),
       scaffoldBackgroundColor: background,

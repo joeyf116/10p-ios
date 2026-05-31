@@ -3,6 +3,8 @@
 .pub/
 build/
 coverage/
+.idea/
+*.iml
 android/
 ios/
 linux/
