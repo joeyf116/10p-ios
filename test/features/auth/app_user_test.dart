@@ -5,6 +5,7 @@ void main() {
   test('serializes and deserializes firestore user schema', () {
     final user = AppUser(
       uid: 'abc123',
+      email: 'jane@example.com',
       displayName: 'Jane Doe',
       role: UserRole.member,
       beltRank: BeltRank.purple,
@@ -15,6 +16,7 @@ void main() {
     final json = user.toJson();
     expect(json['display_name'], 'Jane Doe');
     expect(json['role'], 'member');
+    expect(json['email'], 'jane@example.com');
     expect(AppUser.fromJson(json).beltRank, BeltRank.purple);
   });
 }

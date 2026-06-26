@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../domain/repositories/waiver_repository.dart';
@@ -11,31 +9,21 @@ class FirestoreWaiverRepository implements WaiverRepository {
   final FirebaseFirestore _firestore;
 
   @override
-  Future<bool> hasValidWaiver(String userId) async {
-    final snapshot = await _firestore
-        .collection('waivers')
-        .where('user_id', isEqualTo: userId)
-        .where('is_active', isEqualTo: true)
-        .limit(1)
-        .get();
-
-    return snapshot.docs.isNotEmpty;
+  Future<bool> hasSignedWaiver(String memberId) async {
+    final snap = await _firestore.collection('waivers').doc(memberId).get();
+    return snap.exists;
   }
 
   @override
-  Future<String> uploadSignedWaiver(
-      {required String userId, required List<int> pngBytes}) async {
-    final docRef = await _firestore.collection('waivers').add({
-      'user_id': userId,
-      'is_active': true,
-      'signed_at': FieldValue.serverTimestamp(),
-      'signature_png_base64': base64Encode(pngBytes),
-    });
-
-    await _firestore.collection('users').doc(userId).set({
-      'waiver_signed': true,
-    }, SetOptions(merge: true));
-
-    return docRef.id;
+  Future<void> signWaiver({required String memberId}) async {
+    await Future.wait([
+      _firestore.collection('waivers').doc(memberId).set({
+        'member_id': memberId,
+        'signed_at': FieldValue.serverTimestamp(),
+      }),
+      _firestore.collection('users').doc(memberId).update({
+        'waiver_signed': true,
+      }),
+    ]);
   }
 }

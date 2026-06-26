@@ -1,3 +1,11 @@
+import '../../data/models/competition.dart';
+
 abstract class TournamentRepository {
-  double poundsToKilograms(double pounds) => pounds * 0.45359237;
+  Stream<List<Competition>> watchUpcomingCompetitions();
+
+  Future<void> toggleCompeting({
+    required String competitionId,
+    required String memberId,
+    required bool isCompeting,
+  });
 }

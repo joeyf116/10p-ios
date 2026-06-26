@@ -1,100 +1,103 @@
-import 'dart:convert';
-
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/di/service_locator.dart';
+import '../../../core/providers/auth_provider.dart';
+import '../../../core/theme/app_theme.dart';
 import '../domain/repositories/waiver_repository.dart';
 
-class WaiversScreen extends StatefulWidget {
+const _waiverText = '''
+ASSUMPTION OF RISK AND LIABILITY WAIVER
+
+By signing below, I acknowledge that Brazilian Jiu-Jitsu and related martial arts activities involve inherent risks including, but not limited to, physical injury, broken bones, sprains, strains, bruising, and in rare cases more serious injuries.
+
+I voluntarily choose to participate in training at 10th Planet Jiu Jitsu Greenville knowing these risks exist.
+
+I agree to hold harmless 10th Planet Jiu Jitsu Greenville, its instructors, staff, and affiliates from any and all liability arising from my participation.
+
+I represent that I am in good physical health and have no medical conditions that would prevent my safe participation. I agree to inform instructors of any injuries or medical conditions before training.
+
+I have read this waiver in its entirety and understand its contents.
+''';
+
+class WaiversScreen extends ConsumerStatefulWidget {
   const WaiversScreen({super.key});
 
   @override
-  State<WaiversScreen> createState() => _WaiversScreenState();
+  ConsumerState<WaiversScreen> createState() => _WaiversScreenState();
 }
 
-class _WaiversScreenState extends State<WaiversScreen> {
-  bool _accepted = false;
+class _WaiversScreenState extends ConsumerState<WaiversScreen> {
+  bool _agreed = false;
   bool _submitting = false;
 
-  WaiverRepository get _repository => serviceLocator<WaiverRepository>();
+  Future<void> _submit() async {
+    final user = ref.read(currentUserProvider);
+    if (user == null || !_agreed) return;
+    setState(() => _submitting = true);
+    try {
+      await serviceLocator<WaiverRepository>().signWaiver(memberId: user.uid);
+      if (mounted) context.go('/onboarding/membership');
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Legal Waivers')),
+      appBar: AppBar(title: const Text('Liability Waiver')),
       body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: userId == null
-            ? const Center(child: Text('Sign in to view and submit waivers.'))
-            : FutureBuilder<bool>(
-                future: _repository.hasValidWaiver(userId),
-                builder: (context, snapshot) {
-                  final hasWaiver = snapshot.data ?? false;
-                  return ListView(
-                    children: [
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Text(
-                            hasWaiver
-                                ? 'A valid waiver is on file.'
-                                : 'No active waiver found. Please accept and submit a waiver.',
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      CheckboxListTile(
-                        value: _accepted,
-                        onChanged: _submitting
-                            ? null
-                            : (value) =>
-                                setState(() => _accepted = value ?? false),
-                        title: const Text(
-                            'I have read and accept the liability waiver.'),
-                      ),
-                      const SizedBox(height: 8),
-                      FilledButton(
-                        onPressed: _submitting || !_accepted
-                            ? null
-                            : () => _submitWaiver(userId),
-                        child: Text(_submitting
-                            ? 'Submitting...'
-                            : 'Submit Signed Waiver'),
-                      ),
-                    ],
-                  );
-                },
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.sports_martial_arts, color: AppTheme.brandRed, size: 32),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Before training, please read and sign the liability waiver.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: SingleChildScrollView(
+                  child: Text(_waiverText, style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.6)),
+                ),
               ),
+            ),
+            const SizedBox(height: 16),
+            CheckboxListTile(
+              value: _agreed,
+              onChanged: _submitting ? null : (v) => setState(() => _agreed = v ?? false),
+              title: const Text('I have read and agree to the terms above'),
+              activeColor: AppTheme.brandRed,
+              contentPadding: EdgeInsets.zero,
+            ),
+            const SizedBox(height: 12),
+            FilledButton(
+              onPressed: (_agreed && !_submitting) ? _submit : null,
+              child: _submitting
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Text('Sign Waiver & Continue'),
+            ),
+          ],
+        ),
       ),
     );
-  }
-
-  Future<void> _submitWaiver(String userId) async {
-    setState(() => _submitting = true);
-
-    try {
-      final signatureBytes = utf8.encode(
-        'Signed by $userId on ${DateTime.now().toIso8601String()}',
-      );
-      await _repository.uploadSignedWaiver(
-          userId: userId, pngBytes: signatureBytes);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Waiver saved.')),
-      );
-      setState(() => _accepted = false);
-    } catch (error) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Waiver submission failed: $error')),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _submitting = false);
-      }
-    }
   }
 }

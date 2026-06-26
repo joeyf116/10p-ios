@@ -1,4 +1,4 @@
 abstract class WaiverRepository {
-  Future<String> uploadSignedWaiver({required String userId, required List<int> pngBytes});
-  Future<bool> hasValidWaiver(String userId);
+  Future<bool> hasSignedWaiver(String memberId);
+  Future<void> signWaiver({required String memberId});
 }

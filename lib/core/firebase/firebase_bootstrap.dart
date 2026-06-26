@@ -4,6 +4,16 @@ import 'package:flutter/foundation.dart';
 class FirebaseBootstrap {
   const FirebaseBootstrap._();
 
+  static const FirebaseOptions _defaultWebOptions = FirebaseOptions(
+    apiKey: 'AIzaSyD-ccFMsiUTTbOOS0ZbUcEAPDdHFLZNCyA',
+    appId: '1:838540800529:web:7ed449e21bf3ca2decb7b0',
+    messagingSenderId: '838540800529',
+    projectId: 'p-ios-dece4',
+    authDomain: 'p-ios-dece4.firebaseapp.com',
+    storageBucket: 'p-ios-dece4.firebasestorage.app',
+    measurementId: 'G-N99P57B521',
+  );
+
   static Future<void> initialize() async {
     if (Firebase.apps.isNotEmpty) {
       return;
@@ -37,9 +47,8 @@ class FirebaseBootstrap {
     if (storageBucket.isEmpty) missing.add('FIREBASE_STORAGE_BUCKET');
 
     if (missing.isNotEmpty) {
-      throw StateError(
-        'Missing required Firebase web dart-defines: ${missing.join(', ')}.',
-      );
+      // Keep the app renderable on web even when dart-defines are absent.
+      return _defaultWebOptions;
     }
 
     if (measurementId.isEmpty) {

@@ -8,77 +8,55 @@ import '../../features/auth/data/repositories/firebase_auth_repository.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/check_in/data/repositories/firestore_check_in_repository.dart';
 import '../../features/check_in/domain/repositories/check_in_repository.dart';
+import '../../features/content/data/repositories/firestore_technique_repository.dart';
+import '../../features/content/domain/repositories/technique_library_repository.dart';
 import '../../features/memberships/data/repositories/firestore_membership_repository.dart';
 import '../../features/memberships/domain/repositories/membership_repository.dart';
 import '../../features/schedules/data/repositories/firestore_schedule_repository.dart';
 import '../../features/schedules/domain/repositories/schedule_repository.dart';
+import '../../features/tournaments/data/repositories/firestore_tournament_repository.dart';
+import '../../features/tournaments/domain/repositories/tournament_repository.dart';
 import '../../features/waivers/data/repositories/firestore_waiver_repository.dart';
 import '../../features/waivers/domain/repositories/waiver_repository.dart';
 
 final GetIt serviceLocator = GetIt.instance;
 
 void configureDependencies() {
-  if (!serviceLocator.isRegistered<FirebaseAuth>()) {
-    serviceLocator
-        .registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);
-  }
+  serviceLocator.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);
+  serviceLocator.registerLazySingleton<FirebaseFirestore>(() => FirebaseFirestore.instance);
 
-  if (!serviceLocator.isRegistered<FirebaseFirestore>()) {
-    serviceLocator.registerLazySingleton<FirebaseFirestore>(
-      () => FirebaseFirestore.instance,
-    );
-  }
+  serviceLocator.registerLazySingleton<AuthRepository>(
+    () => FirebaseAuthRepository(
+      firebaseAuth: serviceLocator<FirebaseAuth>(),
+      firestore: serviceLocator<FirebaseFirestore>(),
+    ),
+  );
 
-  if (!serviceLocator.isRegistered<AuthRepository>()) {
-    serviceLocator.registerLazySingleton<AuthRepository>(
-      () => FirebaseAuthRepository(
-        firebaseAuth: serviceLocator<FirebaseAuth>(),
-        firestore: serviceLocator<FirebaseFirestore>(),
-      ),
-    );
-  }
+  serviceLocator.registerLazySingleton<ScheduleRepository>(
+    () => FirestoreScheduleRepository(firestore: serviceLocator<FirebaseFirestore>()),
+  );
 
-  if (!serviceLocator.isRegistered<ScheduleRepository>()) {
-    serviceLocator.registerLazySingleton<ScheduleRepository>(
-      () => FirestoreScheduleRepository(
-        firestore: serviceLocator<FirebaseFirestore>(),
-      ),
-    );
-  }
+  serviceLocator.registerLazySingleton<CheckInRepository>(
+    () => FirestoreCheckInRepository(firestore: serviceLocator<FirebaseFirestore>()),
+  );
 
-  if (!serviceLocator.isRegistered<CheckInRepository>()) {
-    serviceLocator.registerLazySingleton<CheckInRepository>(
-      () => FirestoreCheckInRepository(
-        firestore: serviceLocator<FirebaseFirestore>(),
-      ),
-    );
-  }
+  serviceLocator.registerLazySingleton<AnnouncementRepository>(
+    () => FirestoreAnnouncementRepository(firestore: serviceLocator<FirebaseFirestore>()),
+  );
 
-  if (!serviceLocator.isRegistered<WaiverRepository>()) {
-    serviceLocator.registerLazySingleton<WaiverRepository>(
-      () => FirestoreWaiverRepository(
-        firestore: serviceLocator<FirebaseFirestore>(),
-      ),
-    );
-  }
+  serviceLocator.registerLazySingleton<WaiverRepository>(
+    () => FirestoreWaiverRepository(firestore: serviceLocator<FirebaseFirestore>()),
+  );
 
-  if (!serviceLocator.isRegistered<MembershipRepository>()) {
-    serviceLocator.registerLazySingleton<MembershipRepository>(
-      () => FirestoreMembershipRepository(
-        firestore: serviceLocator<FirebaseFirestore>(),
-      ),
-    );
-  }
+  serviceLocator.registerLazySingleton<MembershipRepository>(
+    () => FirestoreMembershipRepository(firestore: serviceLocator<FirebaseFirestore>()),
+  );
 
-  if (!serviceLocator.isRegistered<AnnouncementRepository>()) {
-    serviceLocator.registerLazySingleton<AnnouncementRepository>(
-      () => FirestoreAnnouncementRepository(
-        firestore: serviceLocator<FirebaseFirestore>(),
-      ),
-    );
-  }
+  serviceLocator.registerLazySingleton<TechniqueLibraryRepository>(
+    () => FirestoreTechniqueRepository(firestore: serviceLocator<FirebaseFirestore>()),
+  );
 
-  if (!serviceLocator.isRegistered<DateTime>()) {
-    serviceLocator.registerFactory<DateTime>(DateTime.now);
-  }
+  serviceLocator.registerLazySingleton<TournamentRepository>(
+    () => FirestoreTournamentRepository(firestore: serviceLocator<FirebaseFirestore>()),
+  );
 }

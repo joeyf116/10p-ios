@@ -1,4 +1,12 @@
+import '../../data/models/check_in_record.dart';
+
 abstract class CheckInRepository {
-  Stream<String> rotatingQrPayload();
-  Future<void> checkIn({required String userId});
+  Future<void> checkIn({
+    required String memberId,
+    required double latitude,
+    required double longitude,
+    String? classId,
+  });
+
+  Stream<List<CheckInRecord>> watchMemberCheckIns(String memberId);
 }

@@ -1,4 +1,12 @@
+import '../../data/models/technique.dart';
+
 abstract class TechniqueLibraryRepository {
-  Future<void> cacheForOffline({required String videoId});
-  Future<void> removeOfflineCopy({required String videoId});
+  Stream<List<Technique>> watchTechniquesBySystem(String system);
+
+  Stream<List<Technique>> watchTechniquesByPosition({
+    required String system,
+    required String position,
+  });
+
+  Future<Technique?> getTechnique(String id);
 }
